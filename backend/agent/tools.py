@@ -1,5 +1,5 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
-from backend.config import GEMINI_API_KEY
+from backend.rag.config import GEMINI_API_KEY
 
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash",
@@ -28,7 +28,7 @@ Starting Location: {start_location}
 Destination: {destination}
 Start Date: {start_date}
 End Date: {end_date}
-Total Days: {total_days}
+Total Days: {total_days} days
 
 Transportation Options: {display_transport}
 Accommodation Preference: {display_Accomodation}
