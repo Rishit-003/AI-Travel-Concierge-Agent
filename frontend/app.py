@@ -1,6 +1,11 @@
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import streamlit as st
-from datetime import date
 from backend.agent.tools import generate_trip_plan
+from datetime import date
 def main():
     # Set page configuration
     st.set_page_config(page_title="AI Travel Planner", page_icon="✈️")
