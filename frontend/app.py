@@ -111,9 +111,8 @@ def main():
 
         st.write("**Preferences & Style:**")
         st.info(display_prefs)
-    
-    if submit_button:
-        with st.spinner("🤖 AI is generating your itinerary... Please wait"):
+        
+        with st.spinner("Generating your itinerary..."):
             trip_plan = generate_trip_plan(
                 start_location,
                 destination,
@@ -125,7 +124,7 @@ def main():
                 display_prefs
             )
 
-    st.subheader("🤖 AI Generated Itinerary")
-    st.write(trip_plan)
+        st.subheader("🤖 AI Generated Itinerary")
+        st.write(trip_plan)
 if __name__ == "__main__":
     main()
