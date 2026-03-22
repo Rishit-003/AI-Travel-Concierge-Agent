@@ -167,15 +167,19 @@ def main():
 
         with st.spinner("The AI Agent is thinking..."):
                 # 1. We create a detailed query string that includes all user inputs
+
                 user_query = (
-                    f"First, search my uploaded documents(if uploaded) for any relevant travel details. "
-                    f"Plan a trip from {start_location} to {destination} "
-                    f"for {total_days} days starting on {start_date}. "
-                    f"Transport: {display_transport}. "
-                    f"Stay: {display_accommodation}. "
-                    f"Preferences: {display_prefs}."
+                    f"Use the search_uploaded_documents tool to find relevant information from my uploaded files. "
+                    f"Then create a detailed travel plan.\n\n"
+                    f"Trip details:\n"
+                    f"From: {start_location}\n"
+                    f"To: {destination}\n"
+                    f"Days: {total_days}\n"
+                    f"Start Date: {start_date}\n"
+                    f"Transport: {display_transport}\n"
+                    f"Stay: {display_accommodation}\n"
+                    f"Preferences: {display_prefs}"
                 )
-                
                 # 2. We call the AGENT instead of the individual function
                 # This allows the AI to check your uploaded PDF if needed [cite: 35, 63]
                 trip_plan = run_travel_agent(user_query)

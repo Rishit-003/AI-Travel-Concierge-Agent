@@ -8,7 +8,7 @@ llm = ChatGoogleGenerativeAI(
     google_api_key=GEMINI_API_KEY
 )
 
-@tool
+@tool("generate_trip_plan")
 def generate_trip_plan(
         start_location,
         destination,
@@ -77,8 +77,9 @@ Rules:
     except Exception as e:
         return f"❌ Error generating plan: {str(e)}"
 
-@tool
+@tool("search_uploaded_documents")
 def search_uploaded_documents(query: str):
+    print("🔍 RAG TOOL CALLED")
     """
     Use this tool ONLY if the user asks a question about their uploaded files, 
     brochures, or personal notes. This searches the local PDF/TXT knowledge base.
