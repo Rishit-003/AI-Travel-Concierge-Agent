@@ -3,12 +3,47 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from backend.rag.document_loader import process_document
+from backend.rag.vector_store import create_vector_store
 import streamlit as st
 from backend.agent.tools import generate_trip_plan
 from datetime import date
 def main():
     # Set page configuration
     st.set_page_config(page_title="AI Travel Planner", page_icon="✈️")
+
+    with st.sidebar:
+        st.header("📂 Trip Documents")
+        uploaded_file = st.file_uploader(
+            "Upload brochures or notes (PDF/TXT)", 
+            type=["pdf", "txt"]
+        )
+        
+        if uploaded_file:
+            # 1. Create a data folder if it doesn't exist
+            upload_dir = "backend/data"
+            if not os.path.exists(upload_dir):
+                os.makedirs(upload_dir)
+            
+            # 2. Save the uploaded file to the data folder
+            file_path = os.path.join(upload_dir, uploaded_file.name)
+            with open(file_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            
+            st.success(f"File saved: {uploaded_file.name}")
+
+            # 3. Process the file (RAG Pipeline)
+            with st.spinner("Indexing document for AI..."):
+                try:
+                    # Load and split
+                    chunks = process_document(file_path)
+                    
+                    # Create and save Vector Store
+                    create_vector_store(chunks)
+                    
+                    st.success("✅ Knowledge base updated!")
+                except Exception as e:
+                    st.error(f"RAG Error: {e}")
 
     st.title("🌍 AI Travel Planner")
     st.markdown("Fill in the details below to generate your custom travel itinerary.")

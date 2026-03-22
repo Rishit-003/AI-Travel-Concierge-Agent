@@ -66,7 +66,8 @@ Rules:
 - Avoid repeating the same locations.
 - Optimize travel time between places.
 """
-
-    response = llm.invoke(prompt)
-
-    return response.content
+    try:
+        response = llm.invoke(prompt)
+        return response.content
+    except Exception as e:
+        return f"Error Generating PLan : {str(e)}"
