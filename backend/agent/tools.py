@@ -36,7 +36,7 @@ End Date: {end_date}
 Total Days: {total_days} days
 
 Transportation Options: {display_transport}
-Accommodation Preference: {display_Accommodation}
+Accommodation Preference: {display_accommodation}
 
 User Preferences:
 {display_prefs}
