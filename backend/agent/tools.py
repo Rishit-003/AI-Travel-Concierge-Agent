@@ -1,12 +1,14 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
 from backend.config import GEMINI_API_KEY
+from langchain.tools import tool
+from backend.rag.vector_store import load_vector_store
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
+    model="gemini-1.5-flash",
     google_api_key=GEMINI_API_KEY
 )
 
-
+@tool
 def generate_trip_plan(
         start_location,
         destination,
@@ -14,10 +16,13 @@ def generate_trip_plan(
         end_date,
         total_days,
         display_transport,
-        display_Accomodation,
+        display_Accommodation,
         display_prefs
 ):
-
+    """
+    Use this tool to generate a detailed, personalized day-by-day travel itinerary. 
+    It requires location details, dates, transport preferences, and user styles.
+    """ 
     prompt = f"""
 You are an intelligent AI Travel Planner.
 
@@ -31,7 +36,7 @@ End Date: {end_date}
 Total Days: {total_days} days
 
 Transportation Options: {display_transport}
-Accommodation Preference: {display_Accomodation}
+Accommodation Preference: {display_Accommodation}
 
 User Preferences:
 {display_prefs}
@@ -68,6 +73,29 @@ Rules:
 """
     try:
         response = llm.invoke(prompt)
-        return response.content
+        return response.content if response else "No response generated."
     except Exception as e:
-        return f"Error Generating PLan : {str(e)}"
+        return f"❌ Error generating plan: {str(e)}"
+
+@tool
+def search_uploaded_documents(query: str):
+    """
+    Use this tool ONLY if the user asks a question about their uploaded files, 
+    brochures, or personal notes. This searches the local PDF/TXT knowledge base.
+    """
+    try:
+        vector_store = load_vector_store()
+
+        if not vector_store:
+            return "No documents found. Please upload a file first."
+
+        docs = vector_store.similarity_search(query, k=3)
+
+        if not docs:
+            return "No relevant information found in documents."
+
+        content = "\n\n".join([d.page_content for d in docs])
+        return content
+
+    except Exception as e:
+        return f"❌ Error searching documents: {str(e)}"

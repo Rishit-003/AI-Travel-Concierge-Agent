@@ -6,7 +6,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from backend.rag.document_loader import process_document
 from backend.rag.vector_store import create_vector_store
 import streamlit as st
-from backend.agent.tools import generate_trip_plan
+# from backend.agent.tools import generate_trip_plan
+from backend.agent.travel_agent import run_travel_agent
 from datetime import date
 def main():
     # Set page configuration
@@ -26,24 +27,29 @@ def main():
                 os.makedirs(upload_dir)
             
             # 2. Save the uploaded file to the data folder
-            file_path = os.path.join(upload_dir, uploaded_file.name)
+            file_path = os.path.join(upload_dir, f"{uploaded_file.name}")
             with open(file_path, "wb") as f:
                 f.write(uploaded_file.getbuffer())
             
             st.success(f"File saved: {uploaded_file.name}")
 
-            # 3. Process the file (RAG Pipeline)
+           # 3. Process the file (RAG Pipeline)
             with st.spinner("Indexing document for AI..."):
                 try:
                     # Load and split
                     chunks = process_document(file_path)
-                    
-                    # Create and save Vector Store
-                    create_vector_store(chunks)
-                    
-                    st.success("✅ Knowledge base updated!")
+
+                    # ✅ FIX: Check if chunks exist
+                    if chunks:
+                        create_vector_store(chunks)
+                        st.success("✅ Knowledge base updated!")
+                    else:
+                        st.error("❌ Failed to process document.")
+
                 except Exception as e:
                     st.error(f"RAG Error: {e}")
+
+
 
     st.title("🌍 AI Travel Planner")
     st.markdown("Fill in the details below to generate your custom travel itinerary.")
@@ -124,7 +130,7 @@ def main():
         
         display_prefs = ", ".join(all_prefs) if all_prefs else "Balanced travel"
         display_transport = ", ".join(transport_options) if transport_options else "Not specified"
-        display_Accomodation = ", ".join(accommodation_type) if accommodation_type else "Not specified"
+        display_accommodation = ", ".join(accommodation_type) if accommodation_type else "Not specified"
 
         # Display Enhanced Summary
         st.success("Form Submitted Successfully!")
@@ -142,22 +148,37 @@ def main():
             st.write(f"**Transport:** {display_transport}")
         
         st.write("**Accommodation:**")
-        st.info(display_Accomodation)
+        st.info(display_accommodation)
 
         st.write("**Preferences & Style:**")
         st.info(display_prefs)
         
-        with st.spinner("Generating your itinerary..."):
-            trip_plan = generate_trip_plan(
-                start_location,
-                destination,
-                start_date,
-                end_date,
-                total_days,
-                display_transport,
-                display_Accomodation,
-                display_prefs
-            )
+        # with st.spinner("Generating your itinerary..."):
+        #     trip_plan = generate_trip_plan(
+        #         start_location,
+        #         destination,
+        #         start_date,
+        #         end_date,
+        #         total_days,
+        #         display_transport,
+        #         display_Accomodation,
+        #         display_prefs
+        #     )
+
+        with st.spinner("The AI Agent is thinking..."):
+                # 1. We create a detailed query string that includes all user inputs
+                user_query = (
+                    f"First, search my uploaded documents(if uploaded) for any relevant travel details. "
+                    f"Plan a trip from {start_location} to {destination} "
+                    f"for {total_days} days starting on {start_date}. "
+                    f"Transport: {display_transport}. "
+                    f"Stay: {display_accommodation}. "
+                    f"Preferences: {display_prefs}."
+                )
+                
+                # 2. We call the AGENT instead of the individual function
+                # This allows the AI to check your uploaded PDF if needed [cite: 35, 63]
+                trip_plan = run_travel_agent(user_query)
 
         st.subheader("🤖 AI Generated Itinerary")
         st.write(trip_plan)
