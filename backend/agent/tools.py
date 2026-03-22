@@ -10,19 +10,19 @@ llm = ChatGoogleGenerativeAI(
 
 @tool("generate_trip_plan")
 def generate_trip_plan(
-        start_location,
-        destination,
-        start_date,
-        end_date,
-        total_days,
-        display_transport,
-        display_Accommodation,
-        display_prefs
+    start_location,
+    destination,
+    start_date,
+    end_date,
+    total_days,
+    display_transport,
+    display_accommodation,
+    display_prefs
 ):
     """
-    Use this tool to generate a detailed, personalized day-by-day travel itinerary. 
-    It requires location details, dates, transport preferences, and user styles.
-    """ 
+    Generates a detailed day-by-day travel itinerary based on user inputs such as
+    location, dates, transport preferences, accommodation, and travel style.
+    """
     prompt = f"""
 You are an intelligent AI Travel Planner.
 
@@ -79,10 +79,9 @@ Rules:
 
 @tool("search_uploaded_documents")
 def search_uploaded_documents(query: str):
-    print("🔍 RAG TOOL CALLED")
     """
-    Use this tool ONLY if the user asks a question about their uploaded files, 
-    brochures, or personal notes. This searches the local PDF/TXT knowledge base.
+    Searches the uploaded documents (PDF/TXT) using vector similarity
+    and returns the most relevant information based on the user query.
     """
     try:
         vector_store = load_vector_store()
