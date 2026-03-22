@@ -3,11 +3,8 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from backend.rag.document_loader import process_document
-from backend.rag.vector_store import create_vector_store
 import streamlit as st
-# from backend.agent.tools import generate_trip_plan
-from backend.agent.travel_agent import run_travel_agent
+from backend.weather_service import build_trip_weather_report
 from datetime import date
 def main():
     # Set page configuration
@@ -36,6 +33,9 @@ def main():
            # 3. Process the file (RAG Pipeline)
             with st.spinner("Indexing document for AI..."):
                 try:
+                    from backend.rag.document_loader import process_document
+                    from backend.rag.vector_store import create_vector_store
+
                     # Load and split
                     chunks = process_document(file_path)
 
@@ -152,6 +152,15 @@ def main():
 
         st.write("**Preferences & Style:**")
         st.info(display_prefs)
+
+        weather_md, weather_err = build_trip_weather_report(destination, start_date, end_date)
+        st.subheader("🌤️ Weather for your trip dates")
+        if weather_err:
+            st.warning(weather_err)
+        elif weather_md:
+            st.markdown(weather_md)
+        else:
+            st.info("No weather data to display.")
         
         # with st.spinner("Generating your itinerary..."):
         #     trip_plan = generate_trip_plan(
@@ -166,19 +175,34 @@ def main():
         #     )
 
         with st.spinner("The AI Agent is thinking..."):
+                from backend.agent.travel_agent import run_travel_agent
+
                 # 1. We create a detailed query string that includes all user inputs
+
+                w_block = ""
+                if weather_md and not weather_err:
+                    w_block = (
+                        f"\n\nForecast for destination (use when calling generate_trip_plan as weather_summary):\n"
+                        f"{weather_md}\n"
+                    )
 
                 user_query = (
                     f"Use the search_uploaded_documents tool to find relevant information from my uploaded files. "
-                    f"Then create a detailed travel plan.\n\n"
+                    f"Then get_trip_weather for destination={destination!r}, "
+                    f"start_date={start_date.isoformat()}, end_date={end_date.isoformat()} "
+                    f"unless the forecast is already fully quoted below. "
+                    f"Then create a detailed travel plan with generate_trip_plan, passing the forecast text "
+                    f"into weather_summary.\n\n"
                     f"Trip details:\n"
                     f"From: {start_location}\n"
                     f"To: {destination}\n"
                     f"Days: {total_days}\n"
-                    f"Start Date: {start_date}\n"
+                    f"Start Date: {start_date.isoformat()}\n"
+                    f"End Date: {end_date.isoformat()}\n"
                     f"Transport: {display_transport}\n"
                     f"Stay: {display_accommodation}\n"
                     f"Preferences: {display_prefs}"
+                    f"{w_block}"
                 )
                 # 2. We call the AGENT instead of the individual function
                 # This allows the AI to check your uploaded PDF if needed [cite: 35, 63]
