@@ -11,7 +11,7 @@ def main():
     st.set_page_config(page_title="AI Travel Planner", page_icon="✈️")
 
     with st.sidebar:
-        st.header("📂 Trip Documen")
+        st.header("📂 Trip Documents")
         uploaded_file = st.file_uploader(
             "Upload brochures or notes (PDF/TXT)", 
             type=["pdf", "txt"]
