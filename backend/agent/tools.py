@@ -135,3 +135,49 @@ def search_uploaded_documents(query: str):
 
     except Exception as e:
         return f"❌ Error searching documents: {str(e)}"
+
+
+def regenerate_itinerary_with_customization(
+    user_inputs: dict,
+    existing_plan: str,
+    custom_instructions: str,
+    weather_summary: str = "No detailed weather forecast was provided.",
+) -> str:
+    """
+    Regenerate a full replacement itinerary (not a partial edit). Used by the Plan page customize flow.
+    """
+    prompt = f"""
+You are an intelligent AI Travel Planner.
+
+The user wants a COMPLETE NEW itinerary that replaces the previous one entirely.
+Do NOT partially edit — output a full day-by-day plan from scratch.
+
+HIGHEST PRIORITY — apply these changes:
+{custom_instructions}
+
+Trip details (must still be respected unless the custom instructions explicitly override):
+Starting Location: {user_inputs.get("start_location", "")}
+Destination: {user_inputs.get("destination", "")}
+Start Date: {user_inputs.get("start_date", "")}
+End Date: {user_inputs.get("end_date", "")}
+Total Days: {user_inputs.get("total_days", "")} days
+Transportation: {user_inputs.get("display_transport", "")}
+Accommodation: {user_inputs.get("display_accommodation", "")}
+Preferences: {user_inputs.get("display_prefs", "")}
+
+Weather context:
+{weather_summary}
+
+Previous itinerary (context only — replace with a fully new itinerary):
+{existing_plan[:12000]}
+
+Requirements (same as a fresh plan):
+- Day-by-day format: Day X and Date (dd/mm/yyyy)
+- Places, activities, food, tips, weather-aware notes when relevant
+- Do not exceed the number of trip days.
+"""
+    try:
+        response = _get_planning_llm().invoke(prompt)
+        return response.content if response else "No response generated."
+    except Exception as e:
+        return f"❌ Error regenerating plan: {str(e)}"

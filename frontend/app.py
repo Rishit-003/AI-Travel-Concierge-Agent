@@ -133,52 +133,10 @@ def main():
         display_transport = ", ".join(transport_options) if transport_options else "Not specified"
         display_accommodation = ", ".join(accommodation_type) if accommodation_type else "Not specified"
 
-        # Display Enhanced Summary
-        st.success("Form Submitted Successfully!")
-        st.markdown("---")
-        st.subheader("📋 Trip Summary")
-        
-        col_left, col_right = st.columns(2)
-        with col_left:
-            st.write(f"**From:** {start_location}")
-            st.write(f"**To:** {destination}")
-            st.write(f"**Total Days:** {total_days}")
-        with col_right:
-            st.write(f"**Start:** {start_date}")
-            st.write(f"**End:** {end_date}")
-            st.write(f"**Transport:** {display_transport}")
-        
-        st.write("**Accommodation:**")
-        st.info(display_accommodation)
-
-        st.write("**Preferences & Style:**")
-        st.info(display_prefs)
-
         weather_md, weather_err = build_trip_weather_report(destination, start_date, end_date)
-        st.subheader("🌤️ Weather for your trip dates")
-        if weather_err:
-            st.warning(weather_err)
-        elif weather_md:
-            st.markdown(weather_md)
-        else:
-            st.info("No weather data to display.")
-        
-        # with st.spinner("Generating your itinerary..."):
-        #     trip_plan = generate_trip_plan(
-        #         start_location,
-        #         destination,
-        #         start_date,
-        #         end_date,
-        #         total_days,
-        #         display_transport,
-        #         display_Accomodation,
-        #         display_prefs
-        #     )
 
         with st.spinner("The AI Agent is thinking..."):
                 from backend.agent.travel_agent import run_travel_agent
-
-                # 1. We create a detailed query string that includes all user inputs
 
                 w_block = ""
                 if weather_md and not weather_err:
@@ -205,11 +163,26 @@ def main():
                     f"Preferences: {display_prefs}"
                     f"{w_block}"
                 )
-                # 2. We call the AGENT instead of the individual function
-                # This allows the AI to check your uploaded PDF if needed [cite: 35, 63]
                 trip_plan = run_travel_agent(user_query)
 
-        st.subheader("🤖 AI Generated Itinerary")
-        st.write(trip_plan)
+        st.session_state["user_inputs"] = {
+            "start_location": start_location,
+            "destination": destination,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "total_days": total_days,
+            "display_prefs": display_prefs,
+            "display_transport": display_transport,
+            "display_accommodation": display_accommodation,
+        }
+        st.session_state["generated_plan"] = trip_plan
+        st.session_state["customized_plan"] = trip_plan
+        st.session_state["plan"] = trip_plan
+        st.session_state["weather_md"] = weather_md
+        st.session_state["weather_err"] = weather_err
+        st.session_state["finalized"] = False
+        st.session_state["plan_show_customize"] = False
+
+        st.switch_page("pages/Plan.py")
 if __name__ == "__main__":
     main()
